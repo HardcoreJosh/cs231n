@@ -21,6 +21,7 @@ def svm_loss_naive(W, X, y, reg):
   """
   dW = np.zeros(W.shape) # initialize the gradient as zero
 
+
   # compute the loss and the gradient
   num_classes = W.shape[1]
   num_train = X.shape[0]
@@ -34,6 +35,13 @@ def svm_loss_naive(W, X, y, reg):
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
         loss += margin
+#################################  my code computing dW
+        dW[:, j] += X[i, :].T
+        dW[:, y[i]] -= X[i, :].T
+
+  dW /= num_train
+  dW += reg * W
+#################################
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
@@ -69,7 +77,33 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  pass
+
+  #####  half vectorized:
+  # loss += 0.5 * reg * np.sum(W * W)
+  # delta = 1
+  # for i in xrange(X.shape[0]):
+  # 	sample = X[i, :]
+  # 	diff = delta + sample.dot(W - W[:, y[i]: y[i] + 1])
+  # 	loss_i = np.maximum(0, diff)
+  # 	loss_i[y[i]] = 0
+  # 	loss += np.sum(loss_i)
+
+  # loss /= X.shape[0]
+
+  ####   fully vectorized:
+  score_all = X.dot(W)
+  score_correct = score_all[range(X.shape[0]), y]
+  score_correct = np.reshape(score_correct, (X.shape[0], 1))
+
+  diff = score_all - score_correct
+  diff = np.maximum(0, 1 + diff)
+  diff[range(X.shape[0]), y] = 0
+
+  loss += np.sum(diff)
+  loss /= X.shape[0]
+  loss += 0.5 * reg * np.sum(W * W)
+
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -84,6 +118,15 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
+  for i in xrange(diff.shape[0]):
+  	for j in xrange(diff.shape[1]):
+  		if diff[i][j] > 0:
+  			dW[:, j] += X[i, :].T
+  			dW[:, y[i]] -= X[i, :].T
+
+  dW /= X.shape[0]
+  dW += reg * W
+
   pass
   #############################################################################
   #                             END OF YOUR CODE                              #

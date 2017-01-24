@@ -49,7 +49,12 @@ class LinearClassifier(object):
       # Hint: Use np.random.choice to generate indices. Sampling with         #
       # replacement is faster than sampling without replacement.              #
       #########################################################################
-      pass
+
+      selector = np.random.randint(num_train, size=(batch_size, ))
+      X_batch = X[selector, :]
+      y_batch = y[selector]
+
+
       #########################################################################
       #                       END OF YOUR CODE                                #
       #########################################################################
@@ -63,7 +68,9 @@ class LinearClassifier(object):
       # TODO:                                                                 #
       # Update the weights using the gradient and the learning rate.          #
       #########################################################################
-      pass
+
+      self.W -= grad * learning_rate
+
       #########################################################################
       #                       END OF YOUR CODE                                #
       #########################################################################
@@ -86,20 +93,23 @@ class LinearClassifier(object):
       array of length N, and each element is an integer giving the predicted
       class.
     """
-    y_pred = np.zeros(X.shape[1])
+    y_pred = np.zeros(X.shape[0])
     ###########################################################################
     # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-    pass
+    # W.shape (3073, 10), X.shape (49000, 3073)
+
+    response = X.dot(self.W)
+    y_pred = np.argmax(response, axis=1)
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
     return y_pred
-  
+
   def loss(self, X_batch, y_batch, reg):
     """
-    Compute the loss function and its derivative. 
+    Compute the loss function and its derivative.
     Subclasses will override this.
 
     Inputs:
